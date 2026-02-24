@@ -1,0 +1,380 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ثبت درخواست حواله</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body {font-family:'Vazirmatn',Tahoma,sans-serif;background:#1c1c1c;margin:0;padding:0;}
+.container{max-width:700px;margin:50px auto;background:#2c2c2c;border-radius:20px;padding:30px 25px;box-shadow:0 15px 35px rgba(0,0,0,0.5);border-top:5px solid #0088cc;position:relative;}
+h2{text-align:center;color:#0088cc;margin-bottom:25px;font-size:28px;}
+.row{display:flex;gap:15px;flex-wrap:wrap;margin-bottom:12px;align-items:center;}
+.row .group{flex:1;display:flex;gap:10px;}
+label{display:block;margin-bottom:5px;font-weight:bold;color:#0088cc;}
+input, select{padding:12px;border-radius:10px;border:1px solid #555;font-size:15px;transition:0.3s;width:100%;background:#3c3c3c;color:white;}
+input::placeholder, select option{color:#ccc;}
+input:focus, select:focus{border-color:#0088cc;outline:none;box-shadow:0 0 8px rgba(0,136,204,0.5);}
+button{background:#0088cc;color:white;border:none;font-weight:bold;cursor:pointer;transition:0.3s;font-size:16px;border-radius:10px;padding:10px 15px;}
+button:hover{background:#006699;transform: translateY(-2px);}
+.result, #historyBox{margin-top:25px;padding:20px;background:#3a3a3a;border-radius:15px;display:none;animation:fadeIn 0.5s;border-left:5px solid #0088cc;color:white;max-height:400px;overflow:auto;}
+@keyframes fadeIn{from{opacity:0; transform:translateY(-10px);}to{opacity:1; transform:translateY(0);}}
+.detail-item{margin:8px 0;font-size:15px;padding:10px;border-radius:10px;background:#2a2a2a;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.code{font-size:20px;font-weight:bold;color:#0088cc;}
+.signature{font-size:16px;font-weight:bold;color:#00ffff;}
+.copy-btn{background:#00aaff;margin-left:10px;transition:0.3s;border:none;padding:5px 10px;border-radius:10px;color:white;cursor:pointer;font-size:14px;}
+.copy-btn:hover{background:#0088cc;color:white;}
+.history-btn{
+background:#ffaa00 !important;
+color:white;
+display:inline-flex;
+align-items:center;
+gap:5px;
+border-radius:10px;
+font-size:15px;
+padding:8px 10px;
+font-weight:bold;
+border:none;
+}
+.arrow{font-size:16px;transition:0.3s;}
+#paymentPage{display:none;padding:20px;max-width:600px;margin:30px auto;background:#2c2c2c;border-radius:20px;}
+.upload-btn{
+display:inline-block;
+background:#0088cc;
+color:white;
+padding:10px 15px;
+border-radius:10px;
+cursor:pointer;
+font-weight:bold;
+margin-top:5px;
+transition:0.3s;
+}
+.upload-btn:hover{background:#006699;}
+#confirmPaymentBtn:disabled{background:#555;cursor:not-allowed;}
+
+/* دکمه کوچک بستن گوشه راست بالا */
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #e53935;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s;
+    z-index: 1000;
+}
+.close-btn:hover { 
+    background: #c62828; 
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<!-- دکمه بستن گوشه راست بالا -->
+<button class="close-btn" onclick="window.location.href='https://mo93ch-dev.github.io/Aryapardakht'">×</button>
+
+<h2>ثبت درخواست حواله</h2>
+
+<div class="row form-row">
+<div class="group">
+<input type="text" id="sender" placeholder="نام فرستنده">
+<input type="text" id="senderFather" placeholder="نام پدر فرستنده">
+</div>
+</div>
+
+<div class="row form-row">
+<div class="group">
+<input type="text" id="receiver" placeholder="نام گیرنده">
+<input type="text" id="receiverFather" placeholder="نام پدر گیرنده">
+</div>
+</div>
+
+<div class="row form-row">
+<label style="width:100%;">ولایت و ولسوالی گیرنده</label>
+</div>
+
+<div class="row form-row">
+<select id="receiverProvince">
+<option value="تخار">تخار</option>
+</select>
+
+<select id="receiverDistrict">
+<option value="">انتخاب ولسوالی</option>
+</select>
+</div>
+
+<div class="row form-row">
+<input type="number" id="amount" placeholder="مقدار پول به افغانی">
+</div>
+
+<p id="tomanEquivalent" style="color:#ffd700;font-weight:bold;margin-top:-10px;"></p>
+
+<div style="display:flex;gap:10px;margin-top:20px;">
+<button id="submitBtn" onclick="submitForm()">تأیید و ادامه</button>
+<button class="history-btn" id="historyBtn" onclick="toggleHistory()">
+تاریخچه سفارش‌ها <span class="arrow">▼</span>
+</button>
+</div>
+
+<div class="result" id="resultBox">
+<p id="successMessage" style="color:#4CAF50;font-weight:bold;margin-bottom:10px;">
+سفارش شما ثبت شد و در حال بررسی می‌باشد. بعد از بررسی اجرا میشود.
+</p>
+<div id="details"></div>
+<p style="color:#ffaa00;margin-top:10px;font-weight:bold;">
+قبل از ترک این صفحه با استفاده از دکمه زیر از جزیات درخواست حواله کاپی بگیرید.
+</p>
+<button class="copy-btn" onclick="copyDetails()">کاپی از جزئیات</button>
+<button class="copy-btn" style="background:#e53935;" onclick="closeDetails()">بستن صفحه</button>
+</div>
+
+<div id="historyBox"></div>
+
+<div id="paymentPage">
+<h2 style="color:#00d4ff;text-align:center;">مرحله پرداخت</h2>
+<p style="color:#ffd700;">مبلغ قابل پرداخت: <span id="paymentToman"></span></p>
+<p style="color:#ff6f61;">لطفاً مبلغ فوق را به شماره کارت زیر واریز کنید:</p>
+<p style="color:#00ff99;" id="paymentInfo">
+شماره کارت: 6274 1212 0078 0559 <br>
+بانک: اقتصاد نوین <br>
+بنام: محمد... گلزار
+</p>
+
+<button class="copy-btn" onclick="copyPaymentInfo()">کپی اطلاعات پرداخت</button>
+
+<p style="color:#ffa500;font-weight:bold;margin-top:15px;">
+بعد از واریز عکس فیش را انتخاب کنید
+</p>
+
+<label for="paymentReceipt" class="upload-btn">
+انتخاب عکس فیش
+</label>
+<input type="file" id="paymentReceipt" accept="image/*" hidden>
+
+<p id="fileName" style="color:#00ff99;font-size:14px;"></p>
+
+<button id="confirmPaymentBtn" disabled
+style="color:white;font-weight:bold;border-radius:10px;padding:10px 15px;margin-top:10px;">
+تأیید پرداخت و ثبت حواله
+</button>
+</div>
+
+</div>
+
+<script>
+const provinces=["تخار"];
+const districts={"تخار":[
+{name:"تالقان",address:"تخار، ولسوالی تالقان، شماره شعبه 01، تلفن:0701000001"},
+{name:"رستاق",address:"رستاق بندر شهر کهنه مارکت حاجی بصیر منزل ۲ دکان شماره ۰ شماره تماس ۰۷۷۵۰۶۰۵۵"},
+{name:"چاه‌آب",address:"تخار، ولسوالی چاه‌آب، شماره شعبه 03، تلفن:0701000003"},
+{name:"دشت قعله",address:"تخار، ولسوالی دشت قعله، شماره شعبه 04، تلفن:0701000004"}
+]};
+
+let receiverProvinceSelect=document.getElementById("receiverProvince");
+let receiverDistrictSelect=document.getElementById("receiverDistrict");
+let historyBox=document.getElementById("historyBox");
+let historyArrow=document.querySelector(".history-btn .arrow");
+let historyVisible=false;
+let allTransfers=JSON.parse(localStorage.getItem("allTransfers")||"[]");
+
+function fillDistricts(province){
+receiverDistrictSelect.innerHTML='<option value="">انتخاب ولسوالی</option>';
+if(districts[province]) districts[province].forEach(d=>{
+let opt=document.createElement("option");
+opt.value=d.name;
+opt.text=d.name;
+receiverDistrictSelect.appendChild(opt);
+});
+}
+receiverProvinceSelect.value="تخار";
+fillDistricts("تخار");
+
+receiverProvinceSelect.addEventListener("change",function(){
+alert("فعلاً تنها استان فعال: تخار");
+this.value="تخار";
+});
+
+document.getElementById("amount").addEventListener("input",function(){
+let afghani=parseFloat(this.value)||0;
+let toman=afghani*(1000000/370);
+document.getElementById("tomanEquivalent").innerText=
+"معادل تقریبی: "+Math.round(toman).toLocaleString()+" تومان";
+});
+
+function submitForm(){
+let sender=document.getElementById("sender").value.trim();
+let senderFather=document.getElementById("senderFather").value.trim();
+let receiver=document.getElementById("receiver").value.trim();
+let receiverFather=document.getElementById("receiverFather").value.trim();
+let receiverProvince=document.getElementById("receiverProvince").value;
+let receiverDistrictName=document.getElementById("receiverDistrict").value;
+let amount=document.getElementById("amount").value.trim();
+
+if(!sender||!senderFather||!receiver||!receiverFather||!receiverProvince||!receiverDistrictName||!amount){
+alert("لطفاً تمام اطلاعات را تکمیل کنید");
+return;
+}
+
+if(historyVisible){
+historyVisible=false;
+historyBox.style.display="none";
+historyArrow.innerText="▼";
+}
+
+window.pendingTransfer={sender,senderFather,receiver,receiverFather,receiverProvince,receiverDistrictName,amount};
+openPaymentPage();
+}
+
+function openPaymentPage(){
+const paymentPage=document.getElementById("paymentPage");
+paymentPage.style.display="block";
+
+const afghani=parseFloat(window.pendingTransfer.amount);
+let toman=afghani*(1000000/370);
+document.getElementById("paymentToman").innerText=
+Math.round(toman).toLocaleString()+" تومان";
+
+paymentPage.scrollIntoView({behavior:"smooth",block:"start"});
+document.getElementById("submitBtn").style.display="none";
+}
+
+function copyPaymentInfo(){
+const text=document.getElementById("paymentInfo").innerText+
+"\nمبلغ قابل واریز: "+document.getElementById("paymentToman").innerText;
+navigator.clipboard.writeText(text);
+alert("اطلاعات پرداخت با موفقیت کاپی شد");
+}
+
+const receiptInput=document.getElementById("paymentReceipt");
+const confirmPaymentBtn=document.getElementById("confirmPaymentBtn");
+const fileName=document.getElementById("fileName");
+
+receiptInput.addEventListener("change",function(){
+if(this.files.length>0){
+confirmPaymentBtn.disabled=false;
+confirmPaymentBtn.style.background="#28a745";
+fileName.innerText="فایل انتخاب شده: "+this.files[0].name;
+}else{
+confirmPaymentBtn.disabled=true;
+confirmPaymentBtn.style.background="#555";
+fileName.innerText="";
+}
+});
+
+confirmPaymentBtn.addEventListener("click",function(){
+finalizeForm(window.pendingTransfer);
+
+document.getElementById("paymentPage").style.display="none";
+document.querySelectorAll(".form-row").forEach(el=>el.style.display="none");
+document.getElementById("historyBtn").style.display="none";
+
+document.getElementById("amount").value="";
+document.getElementById("sender").value="";
+document.getElementById("senderFather").value="";
+document.getElementById("receiver").value="";
+document.getElementById("receiverFather").value="";
+document.getElementById("receiverDistrict").value="";
+document.getElementById("paymentReceipt").value="";
+confirmPaymentBtn.disabled=true;
+confirmPaymentBtn.style.background="#555";
+fileName.innerText="";
+
+document.getElementById("resultBox").style.display="block";
+window.pendingTransfer=null;
+});
+
+function finalizeForm(data){
+let trackingCode=Math.floor(1000+Math.random()*9000);
+let districtInfo=districts[data.receiverProvince]
+.find(d=>d.name===data.receiverDistrictName);
+let now=new Date();
+let dateTime=now.toLocaleString();
+
+document.querySelector(".container h2").innerText=
+"درخواست حواله شما ثبت شد";
+
+let detailsHTML=`
+<div class="detail-item">
+<b>شماره حواله:</b> <span class="code">${trackingCode}</span>
+<small style="color:#ffaa00;font-size:12px;">بعد از راستی‌آزمایی فعال می‌شود</small>
+</div>
+<div class="detail-item"><b>فرستنده:</b> ${data.sender} (${data.senderFather})</div>
+<div class="detail-item"><b>گیرنده:</b> ${data.receiver} (${data.receiverFather})</div>
+<div class="detail-item"><b>ولایت گیرنده:</b> ${data.receiverProvince}</div>
+<div class="detail-item"><b>ولسوالی گیرنده:</b> ${data.receiverDistrictName}</div>
+<div class="detail-item"><b>مبلغ:</b> ${data.amount} افغانی</div>
+<div class="detail-item"><b>آدرس دقیق:</b> ${districtInfo.address}</div>
+<div class="detail-item"><b>تاریخ و ساعت:</b> ${dateTime}</div>
+<div class="detail-item"><span class="signature">آریا پرداخت</span></div>
+`;
+
+document.getElementById("details").innerHTML=detailsHTML;
+allTransfers.unshift({...data,code:trackingCode,dateTime});
+localStorage.setItem("allTransfers",JSON.stringify(allTransfers));
+}
+
+function closeDetails(){
+document.getElementById("resultBox").style.display="none";
+document.querySelectorAll(".form-row").forEach(el=>el.style.display="flex");
+document.getElementById("historyBtn").style.display="inline-flex";
+document.getElementById("submitBtn").style.display="inline-block";
+document.querySelector(".container h2").innerText="ثبت درخواست حواله";
+}
+
+function copyDetails(){
+navigator.clipboard.writeText(document.getElementById("details").innerText);
+alert("جزئیات با موفقیت کاپی شد");
+}
+
+function toggleHistory(){
+historyVisible=!historyVisible;
+historyArrow.innerText=historyVisible?"▲":"▼";
+
+if(!historyVisible){historyBox.style.display="none";return;}
+
+if(allTransfers.length===0){
+historyBox.innerHTML="<p style='color:#ccc;'>هیچ حواله ثبت نشده است.</p>";
+}else{
+let html=allTransfers.map((t,index)=>`
+<div class="detail-item" style="flex-direction:column;align-items:flex-start;">
+<div>
+<b>شماره حواله:</b> ${t.code},
+<b>فرستنده:</b> ${t.sender} (${t.senderFather}),
+<b>گیرنده:</b> ${t.receiver} (${t.receiverFather}),
+<b>ولایت/ولسوالی:</b> ${t.receiverProvince} / ${t.receiverDistrictName},
+<b>مبلغ:</b> ${t.amount} افغانی,
+<b>تاریخ و ساعت:</b> ${t.dateTime},
+<span class="signature">آریا پرداخت</span>
+</div>
+<button class="copy-btn" onclick="copyHistory(${index})">کاپی</button>
+</div>`).join("");
+historyBox.innerHTML=html;
+historyBox.style.display="block";
+}
+}
+
+function copyHistory(index){
+let t=allTransfers[index];
+let text=`شماره حواله: ${t.code}
+فرستنده: ${t.sender} (${t.senderFather})
+گیرنده: ${t.receiver} (${t.receiverFather})
+ولایت/ولسوالی: ${t.receiverProvince} / ${t.receiverDistrictName}
+مبلغ: ${t.amount} افغانی
+آدرس دقیق: ${districts[t.receiverProvince].find(d=>d.name===t.receiverDistrictName).address}
+تاریخ و ساعت: ${t.dateTime}
+آریا پرداخت`;
+navigator.clipboard.writeText(text);
+alert("جزئیات سفارش با موفقیت کاپی شد");
+}
+</script>
+</body>
+</html>
